@@ -126,7 +126,28 @@ router.post('/login', [
     });
   } catch (error) {
     console.error('Login error:', error);
-    res.status(500).json({ message: 'Server error' });
+    
+    // More specific error messages
+    if (error.code === 'ECONNREFUSED') {
+      return res.status(500).json({ message: 'Database connection refused. Please check database configuration.' });
+    }
+    
+    if (error.code === 'ER_ACCESS_DENIED_ERROR') {
+      return res.status(500).json({ message: 'Database access denied. Please check credentials.' });
+    }
+    
+    if (error.code === 'ER_BAD_DB_ERROR') {
+      return res.status(500).json({ message: 'Database does not exist. Please check database name.' });
+    }
+    
+    if (error.code === 'ENOTFOUND') {
+      return res.status(500).json({ message: 'Database host not found. Please check host configuration.' });
+    }
+    
+    res.status(500).json({ 
+      message: 'Server error', 
+      error: process.env.NODE_ENV === 'development' ? error.message : 'Internal server error'
+    });
   }
 });
 
